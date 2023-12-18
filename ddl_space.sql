@@ -1,0 +1,363 @@
+create database SPACE_EXP_2;
+
+
+create table Department(DID int primary key,
+						name varchar(30),
+                        budget double,
+                        capacity int,
+                        description varchar(150));
+
+
+create table Manager(Manager_ID int primary key,
+					 DID int NOT NULL,
+					 name varchar(30),
+                     salary double,
+                     experience int,
+					 Foreign key (DID) references Department(DID)
+                     ON DELETE CASCADE
+                     ON UPDATE CASCADE,
+                     check(experience<=5 AND experience>=0 ));
+                     
+create table Manager_phone_number (Manager_ID int,
+								   phone_number varchar(25),
+								   primary key(Manager_ID, phone_number),
+                                   Foreign key (Manager_ID) references Manager(Manager_ID)
+                                   ON DELETE no action
+								   ON UPDATE no action);
+                                   
+
+create table Employee(employee_ID int primary key,
+					  DID int NOT NULL,
+                      Manager_ID int,
+					  name varchar(30),
+                      age int,
+                      salary double, 
+                      start_date date,
+                      work_schedule varchar(100),
+                      Foreign key (DID) references Department(DID)
+                      ON DELETE CASCADE
+					  ON UPDATE CASCADE,
+                      Foreign key (Manager_ID) references Manager(Manager_ID)
+                      ON DELETE CASCADE
+					  ON UPDATE CASCADE,
+                      check (age >= 18));
+                      
+create table Employee_languages (employee_ID int, 
+								language varchar(20),
+                                PRIMARY KEY (employee_ID, language),
+                                Foreign key (employee_ID) references Employee(employee_ID)
+                                ON DELETE no action
+								ON UPDATE no action);
+                                
+create table Employee_phone_number (employee_ID int, 
+									phone_number varchar(25),
+                                    PRIMARY KEY (employee_ID, phone_number),
+                                    Foreign key (employee_ID) references Employee(employee_ID)
+                                    ON DELETE no action
+								    ON UPDATE no action);
+                                    
+                                    
+create table Branch_Moderator(Branch_Moderator_ID int primary key,
+							  name varchar(20),
+                              age int,
+								executive_rank char(3),
+                              salary double,
+                              date_of_appointment date,
+                              check(age>=25)
+                              );
+
+create table Branch(coordinates_X decimal(10,8),
+					coordinates_Y decimal(10,8),
+                    Branch_Moderator_ID int NOT NULL,
+                    location varchar(40),
+                    services_offere varchar(100),
+                    phone_number varchar(25),
+                    email varchar(55),
+                    unique(coordinates_X,coordinates_Y),
+                    foreign key (Branch_Moderator_ID) references Branch_Moderator(Branch_Moderator_ID)
+					ON DELETE cascade
+                    ON UPDATE cascade);
+                    
+create table Branched_to( DID int,
+						coordinates_X decimal(10,8),
+						coordinates_Y decimal(10,8),
+                        primary key(DID,coordinates_X, coordinates_y),
+                        foreign key(DID) references Department(DID)
+                        ON DELETE NO ACTION
+                        ON UPDATE CASCADE,
+                        foreign key(coordinates_X,coordinates_Y) references Branch(coordinates_X,coordinates_Y)
+                        ON DELETE NO ACTION
+                        ON UPDATE CASCADE
+                        );
+                        
+create table Applicant(applicant_ID int primary key,
+						Manager_ID int,
+                        name varchar(30),
+                        age int,
+                        phone_number varchar(25),
+                        job_records varchar(50),
+                        university_degree char(12),
+                        certificates varchar(40),
+						date_of_application date,
+                        other_activities char(20),
+						Foreign key (Manager_ID) references Manager(Manager_ID)
+                        ON DELETE NO ACTION
+                        ON UPDATE NO ACTION,
+                        check(age>=18)
+                        );
+                        
+                        
+create table Applicant_nationality(applicant_ID int,
+								   nationality char(20),
+                                   primary key(applicant_ID, nationality),
+                                   foreign key (applicant_ID) references Applicant(applicant_ID)
+                                   ON DELETE NO ACTION
+								   ON UPDATE NO ACTION);
+                                   
+create table Trainer(Trainer_ID int primary key,
+					training_material varchar(50),
+                    university_degree char(12),
+                    certificates varchar(40),
+					other_activities char(20),
+                    foreign key (Trainer_ID) references Employee(employee_ID)
+                    ON delete cascade
+                    ON update cascade);
+                    
+create table Passive_Astronaut(Passive_Astronaut_ID int primary key,
+							  Trainer_ID int NOT NULL,
+                              adaptability Decimal(5,2),
+                              join_date date,
+                              estimate_activity_date date,
+                              foreign key (Trainer_ID) references Trainer(Trainer_ID)
+                              ON delete no action
+                              ON update cascade,
+                              foreign key (Passive_Astronaut_ID) references Employee(employee_ID)
+							  ON delete cascade
+							  ON update cascade,
+                              check(adaptability BETWEEN 0 AND 99));
+                              
+                              
+create table Active_Astronaut(Active_Astronaut_ID int primary key,
+							  Passive_Astronaut_ID int NOT NULL,
+                              number_of_flight int,
+                              number_of_tackled_mission int,
+                              estimated_return date,
+                              date_of_Activity date,
+                              foreign key (Passive_Astronaut_ID) references Passive_Astronaut(Passive_Astronaut_ID)
+                              on delete no action
+                              on update cascade,
+                              foreign key (Active_Astronaut_ID) references Employee(employee_ID)
+							  ON delete cascade
+							  ON update cascade
+                              );
+                              
+
+                              
+create table Scientist(Scientist_ID int primary key,
+					   discoveries varchar(50),
+                       university_degree char(12),
+					   certificates varchar(40),
+                       research_studies varchar(100),
+                       foreign key (Scientist_ID) references Employee(employee_ID)
+					   ON delete cascade
+					   ON update cascade
+                       );
+                       
+create table Mission(mission_name varchar(40) primary key,
+					status boolean,
+                    date_of_foundation date,
+                    description varchar(70));
+                    
+create table sets_up(mission_name varchar(40),
+					Scientist_ID int,
+                    primary key(mission_name,Scientist_ID),
+                    foreign key (mission_name) references Mission(mission_name)
+                    on delete cascade
+                    on update cascade,
+                    foreign key (Scientist_ID) references Scientist(Scientist_ID)
+                    on delete no action
+                    on update no action
+                    );
+                    
+create table Appy(Active_Astronaut_ID int,
+				 mission_name varchar(40),
+                 date_of_application date,
+                 primary key(Active_Astronaut_ID, mission_name),
+                 foreign key(Active_Astronaut_ID) references Active_Astronaut(Active_Astronaut_ID)
+                 on delete cascade
+                 on update cascade,
+                 foreign key(mission_name) references Mission(mission_name)
+                 on delete cascade
+                 on update cascade
+                 );
+                 
+create table Manufacturer(manufacturer_ID int primary key,
+						 name varchar(30),
+                         Rank_ char(20),
+                         isActive boolean,
+                         num_of_previous_ships_built int);
+                         
+create table Services(name_of_service char(30),
+					  manufacturer_ID int,
+                      type char(10),
+                      description varchar(70),
+                      primary key(name_of_service,manufacturer_ID),
+                      foreign key (manufacturer_ID) references Manufacturer(manufacturer_ID)
+                      on delete no action
+                      on update cascade);
+
+create table spacecraft_location (spacecraft_location_ID int primary key,
+								  type char(10),
+                                  coordinate_X decimal(10,10) unique,
+                                  coordinate_Y decimal(10,10) unique
+                                  );
+create table SpaceShip(spaceShip_ID int primary key,
+					   spacecraft_location_ID int,
+                       name varchar(30),
+                       type char(20),
+                       release_date date,
+                       isActive boolean,
+                       num_of_flight_hours int,
+                       foreign key (spacecraft_location_ID) references spacecraft_location(spacecraft_location_ID)
+                       on delete cascade
+                       on update cascade);
+                       
+create table Was_In (spaceShip_ID int,
+					 spacecraft_location_ID int,
+					 primary key(spaceShip_ID, spacecraft_location_ID),
+					 foreign key(spaceShip_ID) references SpaceShip(spaceShip_ID)
+                     on delete no action
+                     on update no action,
+                     foreign key(spacecraft_location_ID) references spacecraft_location(spacecraft_location_ID)
+                     on delete cascade
+                     on update cascade
+                     );
+                     
+create table Builds(spaceShip_ID int,
+					manufacturer_ID int,
+                    primary key(spaceShip_ID,manufacturer_ID),
+                    foreign key(spaceShip_ID) references SpaceShip(spaceShip_ID)
+					on delete cascade
+					on update cascade,
+                    foreign key (manufacturer_ID) references Manufacturer(manufacturer_ID)
+					on delete no action
+					on update cascade
+                    );
+
+create table station(station_name varchar(25) primary key,
+					 capacity int,
+                     coordinat_X decimal(10,8),
+                     coordinat_Y decimal(10,8),
+                     check(capacity>=0));
+                     
+
+create table Fly(spaceShip_ID int,
+				Active_Astronaut_ID int,
+                station_name varchar(25),
+                primary key(spaceShip_ID,Active_Astronaut_ID,station_name),
+                foreign key(spaceShip_ID) references SpaceShip(spaceShip_ID)
+				on delete no action
+				on update cascade,
+                foreign key(Active_Astronaut_ID) references Active_Astronaut(Active_Astronaut_ID)
+				on delete no action
+				on update no action,
+                foreign key (station_name) references station(station_name)
+                on delete cascade
+                on update cascade
+                );
+                
+create table Planets(planet_name varchar(25) primary key,
+					 radius float,
+                     mass float,
+                     temperature float,
+                     num_of_moons int,
+                     distance_from_earth double,
+                     check(distance_from_earth>0));
+	
+create table star(star_name varchar(25) primary key,
+				   mass float,
+                   type char(20),
+                   temperature float,
+                   distance_from_earth double,
+                   check(distance_from_earth>0)
+                   );
+                     
+create table orbits(planet_name varchar(25) primary key,
+					star_name varchar(25),
+                    foreign key (planet_name) references Planets(planet_name)
+                    on delete cascade
+                    on update cascade,
+                    foreign key (star_name) references star(star_name)
+                    on delete cascade
+                    on update cascade);
+
+create table Meteors(meteor_name varchar(25) primary key,
+					planet_name varchar(25),
+                    mass float,
+                    velocity double,
+                    direction char(4),
+                    foreign key (planet_name) references Planets(planet_name)
+                    on delete cascade
+                    on update cascade);
+                    
+                    
+create table Blackholes(blackhole_name varchar(25) primary key,
+						mass float,
+						distance_from_earth double);
+                        
+create table attracts(blackhole_name varchar(25),
+					  star_name varchar(25),
+                      primary key(blackhole_name,star_name),
+                      foreign key (star_name) references star(star_name)
+					  on delete cascade
+					  on update cascade,
+                      foreign key (blackhole_name) references Blackholes(blackhole_name)
+					  on delete cascade
+					  on update cascade);
+                      
+create table Galaxy(galaxy_name varchar(25) primary key,
+					size double,
+                    morphology varchar(25),
+                    velocity double,
+                    check(size>0));
+                    
+                    
+create table Belong_to(planet_name varchar(25),
+					   galaxy_name varchar(25),
+                       primary key(planet_name,galaxy_name),
+                       foreign key (planet_name) references Planets(planet_name)
+                       on delete cascade
+                       on update cascade,
+                       foreign key (galaxy_name) references Galaxy(galaxy_name)
+                       on delete cascade
+                       on update cascade);
+
+
+create table Discovers(galaxy_name varchar(25),
+                       Active_Astronaut_ID int,
+                       since date,
+                       primary key(galaxy_name,Active_Astronaut_ID),
+                       foreign key (galaxy_name) references Galaxy(galaxy_name)
+                       on delete cascade
+                       on update cascade,
+                       foreign key(Active_Astronaut_ID) references Active_Astronaut(Active_Astronaut_ID)
+					   on delete no action
+					   on update no action);
+                       
+alter table Manager_phone_number
+add constraint phone_num unique(phone_number);
+
+alter table Branch
+add constraint phone_num unique(phone_number);
+
+ALTER TABLE spacecraft_location
+MODIFY COLUMN coordinate_X decimal(11,8);
+
+ALTER TABLE spacecraft_location
+MODIFY COLUMN coordinate_Y decimal(11,8);
+                
+                    
+ALTER TABLE branch
+CHANGE COLUMN services_offere services_offered VARCHAR(100);
+
+
